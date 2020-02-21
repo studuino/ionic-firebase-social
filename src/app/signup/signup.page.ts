@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import * as firebase from 'firebase/app';
 
 @Component({
   selector: 'app-signup',
@@ -8,13 +9,27 @@ import { NavController } from '@ionic/angular';
 })
 export class SignupPage implements OnInit {
 
-  constructor(private navCtrl: NavController) { }
+  name = '';
+  email = '';
+  password = '';
+
+  constructor(private router: Router) { }
 
   ngOnInit() {
   }
 
+  signUp() {
+    firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
+    .then((user) => {
+      console.log(user);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
+
   goBack() {
-    this.navCtrl.pop();
+    this.router.navigateByUrl('/login');
   }
 
 }
