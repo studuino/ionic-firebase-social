@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="danger">
-    <ion-title>Ionic Firebase Social Test</ion-title>
+    <ion-title>Ionic Firebase Social Demo</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -9,7 +9,7 @@
       <ion-icon name="logo-rss" class="logo" color="light"></ion-icon>
     </ion-item>
     <ion-item color="danger">
-      <ion-label class="ion-text-center"><h1>feedly</h1></ion-label>
+      <ion-label class="ion-text-center"><h1>Social Demo</h1></ion-label>
     </ion-item>
     <ion-item color="danger">
       <ion-label class="ion-text-center"><h6>an app for continuous feed</h6></ion-label>
@@ -19,16 +19,16 @@
       
       <ion-row class="rowStyle">
         <ion-icon name="mail" color="danger"></ion-icon>
-        <ion-input color="dark" type="email" placeholder="your email"></ion-input>
+        <ion-input color="dark" type="email" placeholder="your email" [(ngModel)]="email"></ion-input>
       </ion-row>
       
       <ion-row class="rowStyle">
         <ion-icon name="key" color="danger"></ion-icon>
-        <ion-input color="dark" type="password" placeholder="your password"></ion-input>
+        <ion-input color="dark" type="password" placeholder="your password" [(ngModel)]="password"></ion-input>
       </ion-row>
 
       <ion-row>
-        <ion-button expand="block" fill="outline" shape="round" color="light" style="margin-top: 20px;">
+        <ion-button expand="block" fill="outline" shape="round" color="light" style="margin-top: 20px;" (click)="login()">
         Login
       </ion-button>
       </ion-row>
