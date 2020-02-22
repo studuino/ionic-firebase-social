@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from 'angularfire2/auth';
-import * as firebase from 'firebase/app';
+import { ToastController, AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-signup',
@@ -13,8 +13,10 @@ export class SignupPage implements OnInit {
   name = '';
   email = '';
   password = '';
+  toast: any;
+  alert: any;
 
-  constructor(private router: Router, private fAuth: AngularFireAuth) { }
+  constructor(private router: Router, private fAuth: AngularFireAuth, private toastCtrl: ToastController, private alertCtrl: AlertController) { }
 
   ngOnInit() {
   }
@@ -25,12 +27,28 @@ export class SignupPage implements OnInit {
 
       console.log(data);
 
-      let newUser: firebase.User = data.user;
+      let newUser = data.user;
       newUser.updateProfile({
         displayName: this.name,
         photoURL: ''
       }).then((res) => {
         console.log('Profile Updated');
+
+        this.alert = this.alertCtrl.create({
+          header: 'Account Created',
+          message: 'Your account has been created successfully.',
+          buttons: [
+            {
+              text: 'OK',
+              handler: () => {
+                // Navigate to the feeds page
+              }
+            }
+          ]
+        }).then((alertData) => {
+          alertData.present();
+        });
+
       }).catch((err) => {
         console.log(err);
       });
@@ -38,6 +56,14 @@ export class SignupPage implements OnInit {
     })
     .catch((err) => {
       console.log(err);
+
+      this.toast = this.toastCtrl.create({
+        message: err.message,
+        duration: 5000
+      }).then((toastData) => {
+        toastData.present();
+      });
+
     });
   }
 
