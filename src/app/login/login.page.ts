@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { ToastController } from '@ionic/angular';
@@ -14,7 +15,7 @@ export class LoginPage implements OnInit {
   password = '';
   toast: any;
 
-  constructor(private router: Router, private fAuth: AngularFireAuth, private toastCtrl: ToastController) { }
+  constructor(private navCtrl: NavController, private fAuth: AngularFireAuth, private toastCtrl: ToastController) { }
 
   ngOnInit() {
   }
@@ -30,6 +31,9 @@ export class LoginPage implements OnInit {
       }).then((toastData) => {
         toastData.present();
       });
+
+      // this.router.navigateByUrl('/feed');
+      this.navCtrl.navigateRoot('/feed');
     
     })).catch((err => {
       console.log(err);
@@ -45,7 +49,8 @@ export class LoginPage implements OnInit {
   }
 
   gotoSignup() {
-    this.router.navigateByUrl('/signup');
+    // this.router.navigateByUrl('/signup');
+    this.navCtrl.navigateForward('/signup');
   }
 
 }
