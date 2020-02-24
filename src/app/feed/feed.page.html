@@ -11,14 +11,54 @@
 
 <ion-content>
 
-  <ion-row margin class="rowStyle">
-    <ion-button color="danger">
+  <ion-row class="rowStyle">
+    <ion-button class="ion-margin" color="danger" fill="clear">
       <ion-icon slot="icon-only" name="images"></ion-icon>
     </ion-button>
-        <ion-input type="text" placeholder="Awesome Input"></ion-input>
-        <ion-button color="danger">
-      <ion-icon slot="icon-only" name="send"></ion-icon>
+
+    <ion-input type="text" placeholder="Say something..." [(ngModel)]="text"></ion-input>
+    
+    <ion-button class="ion-margin" color="danger" fill="clear">
+      <ion-icon slot="icon-only" name="send" (click)="post()"></ion-icon>
     </ion-button>
   </ion-row>
+
+  <ion-card>
+    <ion-item-divider color="danger">
+      <ion-label>Bob Says</ion-label>
+    </ion-item-divider>
+
+    <ion-item>
+      <ion-label text-wrap>I am so happy and excited about developing Feedly using Ionic and Firebase!</ion-label>
+    </ion-item>
+
+    <ion-row class="bottom-bar">
+      <ion-col>
+        <ion-button color="danger" fill="clear" expand="block" class="border-right">
+          <ion-icon slot="start" name="thumbs-up"></ion-icon>
+          <small>
+            12 Likes
+          </small>
+        </ion-button>
+      </ion-col>
+      
+      <ion-col>
+        <ion-button color="danger" fill="clear" expand="block" class="border-right">
+          <ion-icon slot="start" name="document-text"></ion-icon>
+          <small>
+            12 Comments
+          </small>
+        </ion-button>
+      </ion-col>
+
+      <ion-col>
+        <ion-button color="danger" fill="clear" expand="block">
+          <small>
+            12 mins ago
+          </small>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-card>
 
 </ion-content>

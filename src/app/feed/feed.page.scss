@@ -2,5 +2,17 @@
     border: solid 1px;
     border-color: var(--ion-color-danger);
     border-radius: 30px;
-    margin-top: 15px;
+    margin: 15px;
+
+    ion-input {
+        margin-top: 5px;
+    }
+}
+
+.bottom-bar {
+    background-color: var(--ion-color-light);
+
+    .border-right {
+        border-right: 1px solid white;
+    }
 }
