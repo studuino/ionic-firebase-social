@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-feed',
@@ -16,7 +16,7 @@ export class FeedPage implements OnInit {
   }
 
   post() {
-    this.fireStore.collection.
+    
   }
 
 }
