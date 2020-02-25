@@ -11,10 +11,33 @@ import { firestore } from 'firebase/app';
 export class FeedPage implements OnInit {
 
   text = '';
+  posts: any[] = [];
 
-  constructor(private fStore: AngularFirestore, private user: UserService) { }
+  constructor(private fStore: AngularFirestore, private user: UserService) {
+
+    this.getPosts();
+
+  }
 
   ngOnInit() {
+  }
+
+  getPosts() {
+
+    this.posts = [];
+
+    const docref = this.fStore.collection('posts');
+    docref.ref.get()
+    .then((docs) => {
+      docs.forEach((doc) => {
+        this.posts.push(doc);
+      });
+
+      console.log(this.posts);
+
+    }).catch((err) => {
+      console.log(err);
+    });
   }
 
   post() {
@@ -24,6 +47,13 @@ export class FeedPage implements OnInit {
       created: firestore.FieldValue.serverTimestamp(),
       uid: this.user.getUID(),
       username: this.user.getUserName()
+    }).then((doc) => {
+
+      console.log(doc);
+      this.getPosts();
+
+    }).catch((err) => {
+      console.log(err);
     });
 
   }

@@ -23,13 +23,17 @@
     </ion-button>
   </ion-row>
 
-  <ion-card>
+  <ion-card *ngFor="let post of posts">
     <ion-item-divider color="danger">
-      <ion-label>Bob Says</ion-label>
+      <ion-label>
+        {{ post.data().username}}
+      </ion-label>
     </ion-item-divider>
 
     <ion-item>
-      <ion-label text-wrap>I am so happy and excited about developing Feedly using Ionic and Firebase!</ion-label>
+      <ion-label text-wrap>
+        {{ post.data().text }}
+      </ion-label>
     </ion-item>
 
     <ion-row class="bottom-bar">
