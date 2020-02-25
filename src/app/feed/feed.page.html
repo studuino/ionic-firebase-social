@@ -2,7 +2,7 @@
   <ion-toolbar color="danger">
     <ion-title>Your Feed</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="logout()">
         <ion-icon slot="icon-only" name="log-out"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -22,6 +22,10 @@
       <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
   </ion-row>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" pullFactor="0.8" pullMin="60" pullMax="120">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
   <ion-card *ngFor="let post of posts">
     <ion-item-divider color="danger">
@@ -58,11 +62,16 @@
       <ion-col>
         <ion-button color="danger" fill="clear" expand="block">
           <small>
-            12 mins ago
+            {{ ago(post.data().created.toDate()) }} ago
           </small>
         </ion-button>
       </ion-col>
     </ion-row>
   </ion-card>
+
+  <ion-infinite-scroll (ionInfinite)="loadMorePosts($event)">
+    <ion-infinite-scroll-content>
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

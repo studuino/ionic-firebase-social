@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { UserService } from '../services/user.service';
 import { firestore } from 'firebase/app';
+import * as moment from 'moment';
+import { ToastController } from '@ionic/angular';
+import { LoadingController } from '@ionic/angular';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-feed',
@@ -12,8 +17,11 @@ export class FeedPage implements OnInit {
 
   text = '';
   posts: any[] = [];
-
-  constructor(private fStore: AngularFirestore, private user: UserService) {
+  pageSize: number = 10;
+  cursor: any;
+  infiniteEvent: any;
+  
+  constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController, private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController) {
 
     this.getPosts();
 
@@ -26,8 +34,55 @@ export class FeedPage implements OnInit {
 
     this.posts = [];
 
+    let loading = this.loadingCtrl.create({
+      message: 'Loading Feed...'
+    }).then((load) => {
+      load.present();
+    });
+
     const docref = this.fStore.collection('posts');
-    docref.ref.get()
+    let query = docref.ref.orderBy('created', 'desc').limit(this.pageSize);
+
+    // query.onSnapshot((snapshot) => {
+    //   // console.log('Changed');
+    //   let changedDocs = snapshot.docChanges();
+    //   changedDocs.forEach((change) => {
+        
+    //     if(change.type == 'added') {
+          
+    //     }
+
+    //     if(change.type == 'modified') {
+
+    //     }
+
+    //     if(change.type == 'removed') {
+
+    //     }
+
+    //   });
+    // });
+
+    query.get()
+    .then((docs) => {
+      docs.forEach((doc) => {
+        this.posts.push(doc);
+      });
+
+      loading.dismiss();
+
+      this.cursor = this.posts[this.posts.length - 1];
+
+      console.log(this.posts);
+
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+  loadMorePosts(event) {
+    const docref = this.fStore.collection('posts');
+    docref.ref.orderBy('created', 'desc').startAfter(this.cursor).limit(this.pageSize).get()
     .then((docs) => {
       docs.forEach((doc) => {
         this.posts.push(doc);
@@ -35,9 +90,26 @@ export class FeedPage implements OnInit {
 
       console.log(this.posts);
 
+      if(docs.size < this.pageSize) {
+        event.target.disabled = true;
+        this.infiniteEvent = event;
+      } else {
+        event.target.complete();
+        this.cursor = this.posts[this.posts.length - 1];
+      }
+
     }).catch((err) => {
       console.log(err);
     });
+  }
+
+  doRefresh(event) {
+    this.posts = [];
+    this.getPosts();
+    if(this.infiniteEvent) {
+      this.infiniteEvent.disabled = false;
+    }
+    event.target.complete();
   }
 
   post() {
@@ -50,12 +122,41 @@ export class FeedPage implements OnInit {
     }).then((doc) => {
 
       console.log(doc);
+
+      // this.posts = [];
+      this.text = '';
+
+      let toast = this.toastCtrl.create({
+        message: 'Your post has been created successfully.',
+        duration: 5000
+      }).then((toastData) => {
+        toastData.present();
+      });
+
       this.getPosts();
 
     }).catch((err) => {
       console.log(err);
     });
+  }
 
+  ago(time) {
+    let difference = moment(time).diff(moment());
+    return moment.duration(difference).humanize();
+  }
+
+  logout() {
+    this.fAuth.auth.signOut().then(() => {
+
+      let toast = this.toastCtrl.create({
+        message: 'You have been logged out successfully.',
+        duration: 5000
+      }).then((toastData) => {
+        toastData.present();
+      });
+
+      this.navCtrl.navigateRoot('/login');
+    });
   }
 
 }
