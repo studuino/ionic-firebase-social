@@ -3,6 +3,7 @@ import { NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { ToastController } from '@ionic/angular';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,8 @@ export class LoginPage implements OnInit {
   password = '';
   toast: any;
 
-  constructor(private navCtrl: NavController, private fAuth: AngularFireAuth, private toastCtrl: ToastController) { }
+  constructor(private navCtrl: NavController, private fAuth: AngularFireAuth,
+              private toastCtrl: ToastController, private user: UserService) { }
 
   ngOnInit() {
   }
@@ -24,6 +26,8 @@ export class LoginPage implements OnInit {
     this.fAuth.auth.signInWithEmailAndPassword(this.email, this.password)
     .then((data => {
       console.log(data);
+
+      this.user.setUser({username: data.user.displayName, uid: data.user.uid});
 
       this.toast = this.toastCtrl.create({
         message: 'Welcome ' + data.user.displayName,
@@ -34,7 +38,7 @@ export class LoginPage implements OnInit {
 
       // this.router.navigateByUrl('/feed');
       this.navCtrl.navigateRoot('/feed');
-    
+
     })).catch((err => {
       console.log(err);
 

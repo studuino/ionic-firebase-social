@@ -3,6 +3,8 @@ import { NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { ToastController, AlertController } from '@ionic/angular';
+import { UserService } from '../services/user.service';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-signup',
@@ -17,7 +19,8 @@ export class SignupPage implements OnInit {
   toast: any;
   alert: any;
 
-  constructor(private navCtrl: NavController, private fAuth: AngularFireAuth, private toastCtrl: ToastController, private alertCtrl: AlertController) { }
+  constructor(private navCtrl: NavController, private fAuth: AngularFireAuth, private toastCtrl: ToastController,
+              private alertCtrl: AlertController, private user: UserService, private fStore: AngularFirestore) { }
 
   ngOnInit() {
   }
@@ -28,7 +31,15 @@ export class SignupPage implements OnInit {
 
       console.log(data);
 
-      let newUser = data.user;
+      this.user.setUser({username: this.name, uid: data.user.uid});
+
+      /*
+      this.fStore.doc(`users/${data.user.uid}`).set({
+        username: this.name
+      });
+      */
+
+      const newUser = data.user;
       newUser.updateProfile({
         displayName: this.name,
         photoURL: ''
