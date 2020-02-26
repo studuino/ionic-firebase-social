@@ -7,6 +7,7 @@ import { ToastController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { NavController } from '@ionic/angular';
+import { setTimeout } from 'timers';
 
 @Component({
   selector: 'app-feed',
@@ -20,8 +21,10 @@ export class FeedPage implements OnInit {
   pageSize: number = 10;
   cursor: any;
   infiniteEvent: any;
-  
-  constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController, private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController) {
+  isLoading = false;
+
+  constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController,
+              private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController) {
 
     this.getPosts();
 
@@ -34,22 +37,40 @@ export class FeedPage implements OnInit {
 
     this.posts = [];
 
-    let loading = this.loadingCtrl.create({
+    this.isLoading = true;
+    this.loadingCtrl.create({
       message: 'Loading Feed...'
     }).then((load) => {
-      load.present();
+      load.present().then(() => {
+        console.log('loading presented');
+        if (!this.isLoading) {
+          load.dismiss().then(() => console.log('abort loading'));
+        }
+      });
     });
 
+    /*
+    this.loadingCtrl.create({
+      message: 'loading...'
+    }).then((load) => {
+      load.present();
+      const ref = this;
+      setTimeout(() => {
+        ref.loadingCtrl.dismiss();
+      }, 5000);
+    });
+    */
+
     const docref = this.fStore.collection('posts');
-    let query = docref.ref.orderBy('created', 'desc').limit(this.pageSize);
+    const query = docref.ref.orderBy('created', 'desc').limit(this.pageSize);
 
     // query.onSnapshot((snapshot) => {
     //   // console.log('Changed');
     //   let changedDocs = snapshot.docChanges();
     //   changedDocs.forEach((change) => {
-        
+
     //     if(change.type == 'added') {
-          
+
     //     }
 
     //     if(change.type == 'modified') {
@@ -69,7 +90,8 @@ export class FeedPage implements OnInit {
         this.posts.push(doc);
       });
 
-      loading.dismiss();
+      this.isLoading = false;
+      this.loadingCtrl.dismiss().then(() => console.log('loading dismissed'));
 
       this.cursor = this.posts[this.posts.length - 1];
 
@@ -90,7 +112,7 @@ export class FeedPage implements OnInit {
 
       console.log(this.posts);
 
-      if(docs.size < this.pageSize) {
+      if (docs.size < this.pageSize) {
         event.target.disabled = true;
         this.infiniteEvent = event;
       } else {
@@ -106,7 +128,8 @@ export class FeedPage implements OnInit {
   doRefresh(event) {
     this.posts = [];
     this.getPosts();
-    if(this.infiniteEvent) {
+
+    if (this.infiniteEvent) {
       this.infiniteEvent.disabled = false;
     }
     event.target.complete();
@@ -126,7 +149,7 @@ export class FeedPage implements OnInit {
       // this.posts = [];
       this.text = '';
 
-      let toast = this.toastCtrl.create({
+      this.toastCtrl.create({
         message: 'Your post has been created successfully.',
         duration: 5000
       }).then((toastData) => {
@@ -141,14 +164,14 @@ export class FeedPage implements OnInit {
   }
 
   ago(time) {
-    let difference = moment(time).diff(moment());
+    const difference = moment(time).diff(moment());
     return moment.duration(difference).humanize();
   }
 
   logout() {
     this.fAuth.auth.signOut().then(() => {
 
-      let toast = this.toastCtrl.create({
+      this.toastCtrl.create({
         message: 'You have been logged out successfully.',
         duration: 5000
       }).then((toastData) => {
