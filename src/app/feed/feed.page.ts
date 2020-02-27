@@ -33,7 +33,13 @@ export class FeedPage implements OnInit {
   ngOnInit() {
   }
 
-  getPosts() {
+  getPosts(event?) {
+
+    if (event) {
+      // this.infiniteEvent = event;
+      // this.infiniteEvent.target.disabled = false;
+      event.target.disabled = false;
+    }
 
     this.posts = [];
 
@@ -119,13 +125,24 @@ export class FeedPage implements OnInit {
 
       console.log('loadMorePosts:', this.posts);
 
-      if (docs.size < this.pageSize) {
-        event.target.disabled = true;
-        this.infiniteEvent = event;
-      } else {
+      setTimeout(() => {
+        console.log('Done');
         event.target.complete();
         this.cursor = this.posts[this.posts.length - 1];
-      }
+        event.target.disabled = false;
+  
+        if (docs.size < this.pageSize && docs.size > 0) {
+          this.infiniteEvent.target.disabled = true;
+        }
+      }, 500);
+
+      // if (docs.size < this.pageSize) {
+      //   event.target.disabled = true;
+      //   this.infiniteEvent = event;
+      // } else {
+      //   event.target.complete();
+      //   this.cursor = this.posts[this.posts.length - 1];
+      // }
 
     }).catch((err) => {
       console.log(err);
@@ -139,26 +156,9 @@ export class FeedPage implements OnInit {
     setTimeout(() => {
       console.log('Async operation has ended');
       event.target.complete();
-      this.getPosts();
+      this.getPosts(event);
     }, 500);
 
-    // this.posts = [];
-    // this.getPosts();
-
-    // if (this.infiniteEvent) {
-    //   this.infiniteEvent.disabled = false;
-    // }
-
-    // event.target.complete();
-
-    // event.target.disabled = true;
-    /*
-    event.target.complete();
-    setTimeout(() => {
-      console.log('refreshed');
-      event.target.disabled = false;
-    }, 500);
-    */
   }
 
   post() {
