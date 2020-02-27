@@ -7,7 +7,7 @@ import { ToastController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { NavController } from '@ionic/angular';
-import { setTimeout } from 'timers';
+// import { setTimeout } from 'timers';
 
 @Component({
   selector: 'app-feed',
@@ -36,6 +36,13 @@ export class FeedPage implements OnInit {
   getPosts() {
 
     this.posts = [];
+
+    /*
+    if (event) {
+      this.infiniteEvent = event;
+      this.infiniteEvent.target.disabled = false;
+    }
+    */
 
     this.isLoading = true;
     this.loadingCtrl.create({
@@ -95,7 +102,7 @@ export class FeedPage implements OnInit {
 
       this.cursor = this.posts[this.posts.length - 1];
 
-      console.log(this.posts);
+      console.log('getPosts:', this.posts);
 
     }).catch((err) => {
       console.log(err);
@@ -110,7 +117,7 @@ export class FeedPage implements OnInit {
         this.posts.push(doc);
       });
 
-      console.log(this.posts);
+      console.log('loadMorePosts:', this.posts);
 
       if (docs.size < this.pageSize) {
         event.target.disabled = true;
@@ -126,13 +133,32 @@ export class FeedPage implements OnInit {
   }
 
   doRefresh(event) {
-    this.posts = [];
-    this.getPosts();
 
-    if (this.infiniteEvent) {
-      this.infiniteEvent.disabled = false;
-    }
+    console.log('Begin async operation');
+
+    setTimeout(() => {
+      console.log('Async operation has ended');
+      event.target.complete();
+      this.getPosts();
+    }, 500);
+
+    // this.posts = [];
+    // this.getPosts();
+
+    // if (this.infiniteEvent) {
+    //   this.infiniteEvent.disabled = false;
+    // }
+
+    // event.target.complete();
+
+    // event.target.disabled = true;
+    /*
     event.target.complete();
+    setTimeout(() => {
+      console.log('refreshed');
+      event.target.disabled = false;
+    }, 500);
+    */
   }
 
   post() {
