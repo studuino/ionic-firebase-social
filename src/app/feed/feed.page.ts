@@ -7,7 +7,6 @@ import { ToastController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { NavController } from '@ionic/angular';
-// import { setTimeout } from 'timers';
 
 @Component({
   selector: 'app-feed',
@@ -20,7 +19,6 @@ export class FeedPage implements OnInit {
   posts: any[] = [];
   pageSize: number = 10;
   cursor: any;
-  infiniteEvent: any;
   isLoading = false;
 
   constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController,
@@ -33,22 +31,9 @@ export class FeedPage implements OnInit {
   ngOnInit() {
   }
 
-  getPosts(event?) {
-
-    if (event) {
-      // this.infiniteEvent = event;
-      // this.infiniteEvent.target.disabled = false;
-      event.target.disabled = false;
-    }
+  getPosts() {
 
     this.posts = [];
-
-    /*
-    if (event) {
-      this.infiniteEvent = event;
-      this.infiniteEvent.target.disabled = false;
-    }
-    */
 
     this.isLoading = true;
     this.loadingCtrl.create({
@@ -61,18 +46,6 @@ export class FeedPage implements OnInit {
         }
       });
     });
-
-    /*
-    this.loadingCtrl.create({
-      message: 'loading...'
-    }).then((load) => {
-      load.present();
-      const ref = this;
-      setTimeout(() => {
-        ref.loadingCtrl.dismiss();
-      }, 5000);
-    });
-    */
 
     const docref = this.fStore.collection('posts');
     const query = docref.ref.orderBy('created', 'desc').limit(this.pageSize);
@@ -129,20 +102,7 @@ export class FeedPage implements OnInit {
         console.log('Done');
         event.target.complete();
         this.cursor = this.posts[this.posts.length - 1];
-        event.target.disabled = false;
-  
-        if (docs.size < this.pageSize && docs.size > 0) {
-          this.infiniteEvent.target.disabled = true;
-        }
       }, 500);
-
-      // if (docs.size < this.pageSize) {
-      //   event.target.disabled = true;
-      //   this.infiniteEvent = event;
-      // } else {
-      //   event.target.complete();
-      //   this.cursor = this.posts[this.posts.length - 1];
-      // }
 
     }).catch((err) => {
       console.log(err);
@@ -156,13 +116,12 @@ export class FeedPage implements OnInit {
     setTimeout(() => {
       console.log('Async operation has ended');
       event.target.complete();
-      this.getPosts(event);
+      this.getPosts();
     }, 500);
 
   }
 
   post() {
-    // console.log(this.user.getUser());
     this.fStore.doc(`posts/${this.fStore.createId()}`).set({
       text: this.text,
       created: firestore.FieldValue.serverTimestamp(),
@@ -172,7 +131,6 @@ export class FeedPage implements OnInit {
 
       console.log(doc);
 
-      // this.posts = [];
       this.text = '';
 
       this.toastCtrl.create({
