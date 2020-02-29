@@ -7,6 +7,8 @@ import { ToastController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { NavController } from '@ionic/angular';
+import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import * as firebase from 'firebase';
 
 @Component({
   selector: 'app-feed',
@@ -20,9 +22,11 @@ export class FeedPage implements OnInit {
   pageSize: number = 10;
   cursor: any;
   isLoading = false;
+  image: string;
 
   constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController,
-              private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController) {
+              private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController,
+              private camera: Camera) {
 
     this.getPosts();
 
@@ -122,16 +126,25 @@ export class FeedPage implements OnInit {
   }
 
   post() {
-    this.fStore.doc(`posts/${this.fStore.createId()}`).set({
+
+    const newPostID = this.fStore.createId();
+
+    //this.fStore.doc(`posts/${this.fStore.createId()}`).set({
+    this.fStore.collection('posts').doc(newPostID).set({
       text: this.text,
       created: firestore.FieldValue.serverTimestamp(),
       uid: this.user.getUID(),
       username: this.user.getUserName()
-    }).then((doc) => {
+    }).then(async (doc) => {
 
-      console.log(doc);
+      console.log('postDoc:', doc);
+
+      if (this.image) {
+        await this.upload(newPostID);
+      }
 
       this.text = '';
+      this.image = undefined;
 
       this.toastCtrl.create({
         message: 'Your post has been created successfully.',
@@ -164,6 +177,67 @@ export class FeedPage implements OnInit {
 
       this.navCtrl.navigateRoot('/login');
     });
+  }
+
+  addPhoto() {
+
+    this.launchCamera();
+
+  }
+
+  launchCamera() {
+
+    const options: CameraOptions = {
+      quality: 100,
+      sourceType: this.camera.PictureSourceType.CAMERA,
+      destinationType: this.camera.DestinationType.DATA_URL,
+      encodingType: this.camera.EncodingType.PNG,
+      mediaType: this.camera.MediaType.PICTURE,
+      correctOrientation: true,
+      targetHeight: 512,
+      targetWidth: 512,
+      allowEdit: true
+    }
+
+    this.camera.getPicture(options).then((base64Image) => {
+      console.log(base64Image);
+      this.image = "data:image/png;base64," + base64Image;
+     }, (err) => {
+      console.log(err);
+     });
+
+  }
+
+  upload(name: string) {
+
+    return new Promise((resolve, reject) => {
+      let ref = firebase.storage().ref('postImages/' + name);
+  
+      let uploadTask = ref.putString(this.image.split(',')[1], 'base64');
+  
+      uploadTask.on('state_changed', (taskSnapshot) => {
+        console.log(taskSnapshot);
+      }, (error) => {
+        console.log(error);
+      }, () => {
+        console.log('The upload is complete!');
+  
+        uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+          console.log(url);
+  
+          firebase.firestore().collection('posts').doc(name).update({
+            image: url
+          }).then(() => {
+            resolve();
+          }).catch((err) => {
+            reject();
+          });
+        }).catch((err) => {
+          reject();
+        });
+      });
+    });
+
   }
 
 }

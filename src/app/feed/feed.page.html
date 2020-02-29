@@ -12,7 +12,7 @@
 <ion-content>
 
   <ion-row class="rowStyle">
-    <ion-button class="ion-margin" color="danger" fill="clear">
+    <ion-button class="ion-margin" color="danger" fill="clear" (click)="addPhoto()">
       <ion-icon slot="icon-only" name="images"></ion-icon>
     </ion-button>
 
@@ -21,6 +21,12 @@
     <ion-button class="ion-margin" color="danger" fill="clear" (click)="post()">
       <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
+  </ion-row>
+
+  <ion-row class="ion-margin rowStyle" *ngIf="image">
+    <ion-card class="round-corners">
+      <img [src]="image" class="round-corners">
+    </ion-card>
   </ion-row>
 
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
@@ -39,6 +45,8 @@
         {{ post.data().text }}
       </ion-label>
     </ion-item>
+
+    <img [src]="post.data().image" *ngIf="post.data().image">
 
     <ion-row class="bottom-bar">
       <ion-col>
