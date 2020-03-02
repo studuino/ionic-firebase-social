@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
 import { UserService } from '../services/user.service';
+
+import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { firestore } from 'firebase/app';
-import * as moment from 'moment';
+
 import { ToastController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { NavController } from '@ionic/angular';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import * as moment from 'moment';
 import * as firebase from 'firebase';
 
 @Component({
@@ -211,12 +213,23 @@ export class FeedPage implements OnInit {
   upload(name: string) {
 
     return new Promise((resolve, reject) => {
+
+      this.loadingCtrl.create({
+        message: 'Uploading image...'
+      }).then((load) => {
+        load.present();
+      });
+
       let ref = firebase.storage().ref('postImages/' + name);
   
       let uploadTask = ref.putString(this.image.split(',')[1], 'base64');
   
-      uploadTask.on('state_changed', (taskSnapshot) => {
+      uploadTask.on('state_changed', (taskSnapshot: any) => {
         console.log(taskSnapshot);
+
+        // let percentage = taskSnapshot.bytesTransferred / taskSnapshot.totalBytes * 100;
+        // this.loadingCtrl.message???change 'Uploaded ' + percentage + '%...';
+
       }, (error) => {
         console.log(error);
       }, () => {
@@ -228,11 +241,14 @@ export class FeedPage implements OnInit {
           firebase.firestore().collection('posts').doc(name).update({
             image: url
           }).then(() => {
+            this.loadingCtrl.dismiss();
             resolve();
           }).catch((err) => {
+            this.loadingCtrl.dismiss();
             reject();
           });
         }).catch((err) => {
+          this.loadingCtrl.dismiss();
           reject();
         });
       });
