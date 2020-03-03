@@ -11,6 +11,7 @@ import { NavController } from '@ionic/angular';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import * as moment from 'moment';
 import * as firebase from 'firebase';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-feed',
@@ -28,7 +29,7 @@ export class FeedPage implements OnInit {
 
   constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController,
               private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController,
-              private camera: Camera) {
+              private camera: Camera, private http: HttpClient) {
 
     this.getPosts();
 
@@ -253,6 +254,47 @@ export class FeedPage implements OnInit {
         });
       });
     });
+
+  }
+
+  like(post) {
+
+    /*
+    let headers = new HttpHeaders();
+    headers.append("Accept", 'application/json');
+    headers.append('Content-Type', 'application/json' );
+    const requestOptions = new RequestOptions({ headers: headers });
+    */
+
+    let httpHeader = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'responseType': 'text'
+      })
+    };
+
+    let body = {
+      postId: post.id,
+      userId: this.user.getUID(),
+      action: post.data().likes && post.data().likes[this.user.getUID()] == true ? 'unlike' : 'like'
+    }
+
+    /*
+    this.http.post('https://us-central1-socialdemo-d221a.cloudfunctions.net/updateLikesCount', JSON.stringify(body), {
+      responseType: 'text'
+    }).subscribe((data) => {
+      console.log(data);
+    }, (error) => {
+      console.log(error);
+    })
+    */
+
+   this.http.post('https://us-central1-socialdemo-d221a.cloudfunctions.net/updateLikesCount', JSON.stringify(body), httpHeader)
+   .subscribe((data) => {
+     console.log(data['_body']);
+    }, error => {
+     console.log(error);
+   });
 
   }
 
