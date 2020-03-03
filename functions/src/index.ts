@@ -12,6 +12,12 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 
 export const updateLikesCount = functions.https.onRequest((request, response) => {
  
+    if (typeof (request.body) === 'string') {
+        request.body = JSON.parse(request.body);
+    } else {
+        request.body = request.body;
+    }
+    
     console.log(request.body);
 
     const postId = request.body.postId;
