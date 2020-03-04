@@ -5,9 +5,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { firestore } from 'firebase/app';
 
-import { ToastController } from '@ionic/angular';
-import { LoadingController } from '@ionic/angular';
-import { NavController } from '@ionic/angular';
+import { NavController, LoadingController, ToastController, ActionSheetController, AlertController } from '@ionic/angular';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import * as moment from 'moment';
 import * as firebase from 'firebase';
@@ -29,7 +27,7 @@ export class FeedPage implements OnInit {
 
   constructor(private fStore: AngularFirestore, private user: UserService, private loadingCtrl: LoadingController,
               private toastCtrl: ToastController, private fAuth: AngularFireAuth, private navCtrl: NavController,
-              private camera: Camera, private http: HttpClient) {
+              private camera: Camera, private http: HttpClient, private actionSheetCtrl: ActionSheetController, private alertCtrl: AlertController) {
 
     this.getPosts();
 
@@ -54,24 +52,30 @@ export class FeedPage implements OnInit {
       });
     });
 
-    const docref = this.fStore.collection('posts');
-    const query = docref.ref.orderBy('created', 'desc').limit(this.pageSize);
+    const query = this.fStore.collection('posts').ref.orderBy('created', 'desc').limit(this.pageSize);
+
+    this.refreshData(query);
 
     // query.onSnapshot((snapshot) => {
     //   // console.log('Changed');
     //   let changedDocs = snapshot.docChanges();
     //   changedDocs.forEach((change) => {
 
-    //     if(change.type == 'added') {
+    //     if (change.type == 'added') {
 
     //     }
 
-    //     if(change.type == 'modified') {
-
+    //     if (change.type == 'modified') {
+    //       // console.log('Document with id ' + change.doc.id + ' has been modified.');
+    //       for (let i = 0; i< this.posts.length; i++) {
+    //         if (this.posts[i].id == change.doc.id) {
+    //           this.posts[i] = change.doc;
+    //         }
+    //       }
     //     }
 
-    //     if(change.type == 'removed') {
-
+    //     if (change.type == 'removed') {
+          
     //     }
 
     //   });
@@ -96,8 +100,11 @@ export class FeedPage implements OnInit {
   }
 
   loadMorePosts(event) {
-    const docref = this.fStore.collection('posts');
-    docref.ref.orderBy('created', 'desc').startAfter(this.cursor).limit(this.pageSize).get()
+    const query = this.fStore.collection('posts').ref.orderBy('created', 'desc').startAfter(this.cursor).limit(this.pageSize)
+    
+    this.refreshData(query);
+
+    query.get()
     .then((docs) => {
       docs.forEach((doc) => {
         this.posts.push(doc);
@@ -267,14 +274,123 @@ export class FeedPage implements OnInit {
       action: post.data().likes && post.data().likes[this.user.getUID()] == true ? 'unlike' : 'like',
       // action: post.data().likes && post.data().likes[firebase.auth().currentUser.uid] == true ? "unlike" : "like"
     }
-    
+
+    this.toastCtrl.create({
+      message: 'Updating like... Please wait.'
+    }).then((toastData) => {
+      toastData.present();
+    });
+
     this.http.post('https://us-central1-socialdemo-d221a.cloudfunctions.net/updateLikesCount', JSON.stringify(body), {
       responseType: 'text'
     }).subscribe((data) => {
       console.log(data);
+      this.toastCtrl.dismiss();
     }, (error) => {
       console.log(error);
+      this.toastCtrl.dismiss();
     })
+  }
+
+  comment(post) {
+
+    this.actionSheetCtrl.create({
+      buttons: [
+        {
+          text: 'View All Comments',
+          handler: () => {
+            //TODO
+          }
+        },
+        {
+          text: 'New Comment',
+          handler: () => {
+            this.alertCtrl.create({
+              header: 'New Comment',
+              message: 'Type your comment',
+              inputs: [
+                {
+                  name: 'comment',
+                  type: 'text'
+                }
+              ],
+              buttons: [
+                {
+                  text: 'Cancel'
+                },
+                {
+                  text: 'Post',
+                  handler: (data) => {
+
+                    if (data.comment) {
+
+                      this.fStore.collection('comments').add({
+                        text: data.comment,
+                        post: post.id,
+                        uid: this.user.getUID(),
+                        username: this.user.getUserName(),
+                        created: firestore.FieldValue.serverTimestamp()
+                      }).then((doc) => {
+                        this.toastCtrl.create({
+                          message: 'Comment posted successfully.',
+                          duration: 3000
+                        }).then((toastData) => {
+                          toastData.present();
+                        });
+                      }).catch((err) => {
+                        this.toastCtrl.create({
+                          message: err.message,
+                          duration: 3000
+                        }).then((toastData) => {
+                          toastData.present();
+                        });
+                      })
+
+                    }
+
+                  }
+                }
+              ]
+            }).then((alert) => {
+              alert.present();
+            });
+
+          }
+        }
+      ]
+    }).then((action) => {
+      action.present();
+    });
+
+  }
+
+  refreshData(query) {
+    
+    query.onSnapshot((snapshot) => {
+      // console.log('Changed');
+      let changedDocs = snapshot.docChanges();
+      changedDocs.forEach((change) => {
+
+        if (change.type == 'added') {
+
+        }
+
+        if (change.type == 'modified') {
+          // console.log('Document with id ' + change.doc.id + ' has been modified.');
+          for (let i = 0; i< this.posts.length; i++) {
+            if (this.posts[i].id == change.doc.id) {
+              this.posts[i] = change.doc;
+            }
+          }
+        }
+
+        if (change.type == 'removed') {
+          
+        }
+
+      });
+    });
+
   }
 
 }
